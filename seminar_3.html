@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .articles {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f3f4f6;
+            padding: 20px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #d1d1d1;
+            border-radius: 4px;
+            font-size: 16px;
+
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<button>Загрузить новости</button>
+
+<div class="articles"></div>
+
+<h1>Создайте свой мебельный гарнитур</h1>
+
+<div class="furniture-option">
+    <h2>Стол</h2>
+    <label>Цвет:
+        <select id="table-color">
+            <option value="brown">Коричневый</option>
+            <option value="white">Белый</option>
+        </select>
+    </label>
+</div>
+
+<div class="furniture-option">
+    <h2>Стул</h2>
+    <label>Материал:
+        <select id="chair-material">
+            <option value="wood">Дерево</option>
+            <option value="metal">Металл</option>
+        </select>
+    </label>
+</div>
+
+<button id="save-btn" class="btn">Сохранить комплект</button>
+<button id="load-btn" class="btn">Загрузить последний комплект</button>
+<button id="clear-btn" class="btn">Очистить настройки</button>
+
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script>
+    // Задача 1
+    // Вы разрабатываете прототип веб-приложения для чтения новостей.
+    //
+    // Статьи "хранятся" во внутреннем массиве (имитируя базу данных). Когда пользователь нажимает на кнопку "Загрузить новости",
+    // ваш код должен имитировать задержку, словно происходит реальная загрузка данных из внешнего источника,
+    // а после этой задержки — отображать новости на странице.
+
+    // Создайте базовую HTML-структуру с кнопкой для загрузки новостей и контейнером для их отображения.
+    // Реализуйте функцию fetchNews(), возвращающую промис. Эта функция должна имитировать задержку в 2 секунды
+    // перед успешным возвращением данных из "виртуальной" базы данных. Для добавления интереса: с вероятностью 10%
+    // она должна возвращать ошибку вместо данных.
+    // При нажатии на кнопку "Загрузить новости" вызывайте функцию fetchNews(), обрабатывая успешное выполнение
+    // и ошибки с использованием then() и catch().
+    // При успешной загрузке отобразите статьи на странице. При ошибке покажите сообщение об ошибке.
+    // Добавьте функционал, который отключает кнопку загрузки на время "загрузки" новостей и активирует
+    // её снова после завершения операции (будь то успешная загрузка или ошибка).
+
+    const articles = [
+        {title: "Новость 1", content: "Содержимое новости 1..."},
+        {title: "Новость 2", content: "Содержимое новости 2..."},
+        {title: "Новость 3", content: "Содержимое новости 3..."},
+        {title: "Новость 4", content: "Содержимое новости 4..."},
+    ]
+    const articlesEl = document.querySelector('.articles')
+    const btnEl = document.querySelector("button");
+    btnEl.addEventListener('click', () => {
+        btnEl.disabled = true;
+        new Promise(function (resolve, reject) {
+            setTimeout(() => {
+                Math.floor(Math.random() * 100) + 1 > 10 ? resolve(articles) : reject(new Error('error'))
+            }, 2000)
+        }).catch((error) => {
+            console.log(error)
+        }).then((resolve) => {
+            console.log(resolve)
+            resolve.forEach(el => {
+                const divEl = document.createElement('div')
+                divEl.innerHTML = `
+                        <div>
+                            <h1>${el.title}</h1>
+                            <p>${el.content}</p>
+                        </div>`
+                articlesEl.append(divEl)
+            })
+        }).finally(() => {
+            btnEl.disabled = false
+        })
+    })
+
+
+    // Задача 2
+
+    const saveBtnEl = document.querySelector('#save-btn')
+    const loadLastBtn = document.querySelector('#load-btn')
+    const clearBtn = document.querySelector('#clear-btn')
+
+    const materialEl = document.querySelector('#chair-material')
+    const tableColorEl = document.querySelector('#table-color')
+
+    const saveOption = []
+
+    saveBtnEl.addEventListener('click', () => {
+        saveOption.table = {color: tableColorEl.value}
+        saveOption.cahir = {material: materialEl.value}
+
+        // сохранение в local Storage
+        localStorage.setItem('color', tableColorEl.value)
+        localStorage.setItem('material', materialEl.value)
+
+        // сохранение в cookies
+        document.cookie = `color=${tableColorEl.value}`
+        document.cookie = `material=${materialEl.value}`
+
+        console.log(document.cookie)
+
+        saveOption.forEach(el => {
+            el.forEach(item => {
+                localStorage.setItem(item.key, item.value)
+            })
+        })
+    })
+
+    loadLastBtn.addEventListener('click', () => {
+        // Подстановк азначений из local Storage
+        // materialEl.value = localStorage.getItem('material')
+        // tableColorEl.value = localStorage.getItem('color')
+
+        // Подстановка значений из cookies
+        materialEl.value = Cookies.get('material')
+        tableColorEl.value = Cookies.get('color')
+    })
+
+    clearBtn.addEventListener('click', () => {
+        // очистка Local Storage
+        localStorage.clear()
+
+        // очистка cookies
+        const cookies = document.cookie.split('; ')
+        console.log(cookies)
+        cookies.forEach(el => {
+            if (el.includes('=')) {
+                console.log(el.split("=")[0])
+                Cookies.remove(el.split("=")[0], {path: ''})
+            }
+        })
+    })
+
+</script>
+</body>
+</html>
